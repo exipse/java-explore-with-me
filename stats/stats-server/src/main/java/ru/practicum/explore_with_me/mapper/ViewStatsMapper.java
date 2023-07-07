@@ -1,9 +1,7 @@
 package ru.practicum.explore_with_me.mapper;
 
 import org.mapstruct.Mapper;
-import ru.practicum.explore_with_me.dto.EndpointHitDto;
 import ru.practicum.explore_with_me.dto.ViewStatsDto;
-import ru.practicum.explore_with_me.model.EndpointHit;
 import ru.practicum.explore_with_me.model.ViewStats;
 
 import java.util.List;

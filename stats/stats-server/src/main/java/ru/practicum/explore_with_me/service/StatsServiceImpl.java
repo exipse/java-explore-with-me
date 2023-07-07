@@ -1,7 +1,6 @@
 package ru.practicum.explore_with_me.service;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.springframework.stereotype.Service;
 import ru.practicum.explore_with_me.dto.EndpointHitDto;
 import ru.practicum.explore_with_me.dto.ViewStatsDto;
