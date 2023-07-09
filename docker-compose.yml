@@ -10,8 +10,8 @@ services:
       - stats-db
     environment:
       - DB_NAME=stats
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=123
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
       - DB_HOST=stats-db
       - DB_PORT=5432
 
@@ -23,8 +23,8 @@ services:
       - "6541:5432"
     environment:
       - POSTGRES_DB=stats
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=123
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
 
 
   ewm-service:
@@ -38,8 +38,8 @@ services:
     - stats-server
     environment:
       - DB_NAME=ewm
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=123
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
       - DB_HOST=ewm-db
       - DB_PORT=5432
 
@@ -50,5 +50,5 @@ services:
       - "6542:5432"
     environment:
       - POSTGRES_DB=ewm
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=123
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
