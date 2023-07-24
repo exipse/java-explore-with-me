@@ -16,7 +16,7 @@
         <module>stats-client</module>
     </modules>
 
-    <artifactId>stats</artifactId>
+     <artifactId>stats</artifactId>
     <packaging>pom</packaging>
 
 

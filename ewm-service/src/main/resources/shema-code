@@ -1,0 +1,69 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table event {
+     id bigint [primary key]
+    annotation varchar
+    category_id bigint
+    confirmedRequests bigint
+    createdOn timestamp
+    description varchar
+    eventDate timestamp
+    initiator_id bigint
+    location_id bigint
+    paid Boolean
+    participantLimit Long
+    publishedOn timestamp
+    requestModeration Boolean
+    state varchar
+    title varchar
+    views bigint
+}
+
+Table category {
+  id bigint [primary key]
+  name varchar
+}
+
+Table user {
+  id bigint [primary key]
+  name varchar
+  email varchar
+}
+
+Table location {
+  id bigint [primary key]
+  lat float4
+  lon float4
+}
+
+Table compilation {
+  id bigint [primary key]
+  pinned Boolean
+  title varchar
+}
+
+Table compilation_event {
+  id bigint [primary key]
+  compilation_id bigint
+  event_id bigint
+}
+
+Table request {
+  id bigint [primary key]
+  created timestamp
+  event_id bigint
+  requester_id bigint
+  status varchar
+}
+
+Ref: event.category_id > category.id
+Ref: event.initiator_id > user.id
+Ref: event.location_id > location.id
+Ref: compilation.id < compilation_event.compilation_id
+Ref: event.id < compilation_event.event_id
+
+Ref: request.event_id > event.id
+Ref: request.requester_id > user.id
+
+
