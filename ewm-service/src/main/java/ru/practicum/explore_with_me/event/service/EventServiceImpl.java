@@ -60,7 +60,8 @@ public class EventServiceImpl implements EventService {
         if (rangeStart != null && rangeEnd != null) {
             validateDate(rangeStart, rangeEnd);
         }
-        List<Event> events = eventRepository.findEventsByParams(users, states, categories, rangeStart, rangeEnd, pageable);
+        List<Event> events
+                = eventRepository.findEventsByParams(users, states, categories, rangeStart, rangeEnd, pageable);
         events.forEach(event -> event.setViews(event.getViews() + 1));
         eventRepository.saveAll(events);
         return eventMapper.toEventListDto(events);
@@ -171,10 +172,10 @@ public class EventServiceImpl implements EventService {
         eventModel.setInitiator(user);
         eventModel.setLocation(location);
         eventModel.setPaid(newEventDto.getPaid() != null ? newEventDto.getPaid() : false);
-        eventModel.setParticipantLimit
-                (newEventDto.getParticipantLimit() != null ? newEventDto.getParticipantLimit() : 0L);
-        eventModel.setRequestModeration
-                (newEventDto.getRequestModeration() != null ? newEventDto.getRequestModeration() : true);
+        eventModel.setParticipantLimit(
+                newEventDto.getParticipantLimit() != null ? newEventDto.getParticipantLimit() : 0L);
+        eventModel.setRequestModeration(
+                newEventDto.getRequestModeration() != null ? newEventDto.getRequestModeration() : true);
         eventModel.setState(State.PENDING);
         eventModel.setViews(0L);
         Event saveEvent = eventRepository.save(eventModel);
@@ -305,7 +306,8 @@ public class EventServiceImpl implements EventService {
 
     private Location checkLocation(LocationDto locationDto) {
         Location locationModel = locationMapper.toLocationModel(locationDto);
-        Optional<Location> locationInDb = locationRepository.findByLatAndLon(locationModel.getLat(), locationModel.getLon());
+        Optional<Location> locationInDb
+                = locationRepository.findByLatAndLon(locationModel.getLat(), locationModel.getLon());
         Location location;
         if (locationInDb.isEmpty()) {
             location = locationRepository.save(locationModel);
@@ -318,8 +320,8 @@ public class EventServiceImpl implements EventService {
     private void checkDate(LocalDateTime dateTime, int hours) {
         LocalDateTime now = LocalDateTime.now().plusHours(hours);
         if (dateTime != null && dateTime.isBefore(now)) {
-            throw new IllegalArgumentException
-                    ("Дата и время на которые намечено событие не может быть раньше, чем через два часа");
+            throw new IllegalArgumentException(
+                    "Дата и время на которые намечено событие не может быть раньше, чем через два часа");
         }
     }
 
