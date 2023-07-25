@@ -14,6 +14,7 @@ import ru.practicum.explore_with_me.category.repository.CategoryRepository;
 import ru.practicum.explore_with_me.event.model.Event;
 import ru.practicum.explore_with_me.event.repository.EventRepository;
 import ru.practicum.explore_with_me.exception.NoFoundException;
+import ru.practicum.explore_with_me.exception.ValidateDataException;
 
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (evensInDb.isEmpty()) {
             categoryRepository.deleteById(catId);
         } else {
-            throw new NoFoundException("Категория содержит события");
+            throw new ValidateDataException("Категория содержит события");
         }
         log.info("Категория удалена");
     }

@@ -62,7 +62,7 @@ public class RequestServiceImpl implements RequestService {
 
         Request request = new Request(null, LocalDateTime.now(), event, user, Status.PENDING);
 
-        if (!event.getRequestModeration()) {
+        if (!event.getRequestModeration() || event.getParticipantLimit().equals(0L)) {
             request.setStatus(Status.CONFIRMED);
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             eventRepository.save(event);

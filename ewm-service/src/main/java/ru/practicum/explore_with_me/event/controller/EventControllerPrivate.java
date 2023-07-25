@@ -2,6 +2,7 @@ package ru.practicum.explore_with_me.event.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explore_with_me.StatsClient;
@@ -50,6 +51,7 @@ public class EventControllerPrivate {
      * Добавление нового события
      */
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto createNewEvent(@Positive @PathVariable Long userId,
                                        @Valid @RequestBody NewEventDto newEventDto) {
         log.info("POST /users/{}/events}", userId);
@@ -74,7 +76,7 @@ public class EventControllerPrivate {
     @PatchMapping("/{eventId}")
     public EventFullDto updateMyEvent(@Positive @PathVariable Long userId,
                                       @Positive @PathVariable Long eventId,
-                                      @RequestBody UpdateEventUserRequestDto userRequest) {
+                                      @Valid @RequestBody UpdateEventUserRequestDto userRequest) {
         log.info("PATCH /users/{}/events/{}", userId, eventId);
         return eventService.updateMyEvent(userId, eventId, userRequest);
     }

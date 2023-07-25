@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.explore_with_me.user.dto.UserDto;
 import ru.practicum.explore_with_me.user.service.UserService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -37,7 +38,7 @@ public class UserAdminController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto addUser(@RequestBody UserDto userDto) {
+    public UserDto addUser(@Valid @RequestBody UserDto userDto) {
         log.info("POST /admin/users");
         return userService.addUser(userDto);
     }

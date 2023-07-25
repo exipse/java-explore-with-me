@@ -23,7 +23,6 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
 
-
     @Override
     @Transactional(readOnly = true)
     public List<UserDto> findAllUsers(List<Long> ids, int from, int size) {
@@ -37,10 +36,8 @@ public class UserServiceImpl implements UserService {
             findUsersInDb = userRepository.findAllByIdIn(ids, pageable).getContent();
         }
         log.info("Список пользователей найден. Размер списка = {} элементов", findUsersInDb.size());
-
         return userMapper.toUserListDto(findUsersInDb);
     }
-
 
     @Override
     public UserDto addUser(UserDto userDto) {

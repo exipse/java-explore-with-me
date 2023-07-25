@@ -57,17 +57,23 @@ public class EventServiceImpl implements EventService {
                                                  LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
         Sort sortById = Sort.by(Sort.Direction.ASC, "id");
         Pageable pageable = PageRequest.of(from / size, size, sortById);
-        validateDate(rangeStart, rangeEnd);
+        if (rangeStart != null && rangeEnd != null) {
+            validateDate(rangeStart, rangeEnd);
+        }
         List<Event> events = eventRepository.findEventsByParams(users, states, categories, rangeStart, rangeEnd, pageable);
         events.forEach(event -> event.setViews(event.getViews() + 1));
         eventRepository.saveAll(events);
         return eventMapper.toEventListDto(events);
     }
 
+    @Transactional
     @Override
     public EventFullDto updateByAdmin(Long eventId, UpdateEventAdminRequestDto updateEventAdminRequestDto) {
+        if (updateEventAdminRequestDto.getEventDate() != null) {
+            checkDate(updateEventAdminRequestDto.getEventDate(), 1);
+        }
+
         Event eventinDB = checkEvent(eventId);
-        checkDate(eventinDB.getEventDate(), 1);
 
         if (updateEventAdminRequestDto.getStateAction() != null) {
             if (updateEventAdminRequestDto.getStateAction().equals(StateAdminAction.PUBLISH_EVENT)
@@ -81,7 +87,7 @@ public class EventServiceImpl implements EventService {
                 throw new ValidateDataException("Cобытие опубликовано, его невозможно отменить");
             }
         }
-        //todo - cделать 1 общий метод.
+
         eventinDB = updateEventsFieldsByAdmin(eventinDB, updateEventAdminRequestDto);
         Event saveEvent = eventRepository.save(eventinDB);
         log.info("Событие eventId={} обновлено администратором", eventId);
@@ -94,6 +100,9 @@ public class EventServiceImpl implements EventService {
                                                     LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                     Boolean onlyAvailable, String sort, int from, int size) {
 
+        if ((rangeStart != null) && (rangeEnd != null)) {
+            validateDate(rangeStart, rangeEnd);
+        }
         Sort sortById = Sort.by(Sort.Direction.ASC, "id");
         Pageable pageable = PageRequest.of(from / size, size, sortById);
 
@@ -119,9 +128,9 @@ public class EventServiceImpl implements EventService {
         LocalDateTime end = LocalDateTime.now();
 
 
-        List<ViewStatsDto> views = (List<ViewStatsDto>) statsClient.get(start, end, uris, false).getBody();
+        List<ViewStatsDto> views = (List<ViewStatsDto>) statsClient.get(start, end, uris, true).getBody();
 
-        if (!views.isEmpty()) {
+        if (views != null) {
             event.setViews((long) views.size());
         } else {
             event.setViews(0L);
@@ -148,7 +157,7 @@ public class EventServiceImpl implements EventService {
         return eventMapper.fromListEventModeltoEventListShortDto(findEventsInDb);
     }
 
-
+    @Transactional
     @Override
     public EventFullDto createNewEvent(Long userId, NewEventDto newEventDto) {
         checkDate(newEventDto.getEventDate(), 2);
@@ -162,8 +171,10 @@ public class EventServiceImpl implements EventService {
         eventModel.setInitiator(user);
         eventModel.setLocation(location);
         eventModel.setPaid(newEventDto.getPaid() != null ? newEventDto.getPaid() : false);
-        eventModel.setParticipantLimit(newEventDto.getParticipantLimit() != null ? newEventDto.getParticipantLimit() : 0L);
-        eventModel.setRequestModeration(newEventDto.getRequestModeration() != null ? newEventDto.getRequestModeration() : true);
+        eventModel.setParticipantLimit
+                (newEventDto.getParticipantLimit() != null ? newEventDto.getParticipantLimit() : 0L);
+        eventModel.setRequestModeration
+                (newEventDto.getRequestModeration() != null ? newEventDto.getRequestModeration() : true);
         eventModel.setState(State.PENDING);
         eventModel.setViews(0L);
         Event saveEvent = eventRepository.save(eventModel);
@@ -174,8 +185,8 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getMyEventById(Long userId, Long eventId) {
         User user = checkUser(userId);
         Event eventInDB = eventRepository.findEventByInitiatorIdAndId(userId, eventId)
-                .orElseThrow(() -> new NoFoundException(String.format("У пользователя id=%d событие id=%d не найдено"
-                        , userId, eventId)));
+                .orElseThrow(() -> new NoFoundException(String.format("У пользователя id=%d событие id=%d не найдено",
+                        userId, eventId)));
         log.info("Для пользователя id={} найдено событие id={}", userId, eventId);
         eventInDB.setViews(eventInDB.getViews() + 1);
         return eventMapper.toEventDto(eventRepository.save(eventInDB));
@@ -222,6 +233,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto updateMyEvent(Long userId, Long eventId, UpdateEventUserRequestDto userRequest) {
+        checkDate(userRequest.getEventDate(), 2);
         User user = checkUser(userId);
         Event eventinDB = checkEvent(eventId);
 
@@ -305,15 +317,15 @@ public class EventServiceImpl implements EventService {
 
     private void checkDate(LocalDateTime dateTime, int hours) {
         LocalDateTime now = LocalDateTime.now().plusHours(hours);
-        if (dateTime.isBefore(now)) {
-            throw new ValidateDataException("Дата и время на которые намечено событие не может быть раньше," +
-                    " чем через два часа от текущего момента");
+        if (dateTime != null && dateTime.isBefore(now)) {
+            throw new IllegalArgumentException
+                    ("Дата и время на которые намечено событие не может быть раньше, чем через два часа");
         }
     }
 
     private void validateDate(LocalDateTime start, LocalDateTime end) {
         if (!(start.isBefore(end) && !start.equals(end))) {
-            throw new ValidateDataException("StartDate должна быть раньше чем EndDate");
+            throw new IllegalArgumentException("StartDate должна быть раньше чем EndDate");
         }
     }
 
@@ -322,20 +334,15 @@ public class EventServiceImpl implements EventService {
     public List<ParticipationRequestDto> getMyEventsByRequest(Long userId, Long eventId) {
 
         eventRepository.findEventByInitiatorIdAndId(userId, eventId)
-                .orElseThrow(() -> new NoFoundException(String.format("У пользователя id=%d событие id=%d не найдено"
-                        , userId, eventId)));
+                .orElseThrow(() -> new NoFoundException(String.format("У пользователя id=%d событие id=%d не найдено",
+                        userId, eventId)));
         List<ParticipationRequestDto> resulRequests =
                 requestMapper.toRequestListDto(requestRepository.findAllByEventId(eventId));
         log.info("Получена информация о {} запросах по событию {}", resulRequests.size(), eventId);
         return resulRequests;
     }
 
-    //Обратите внимание:
-    //
-    // если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется
-    // нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие (Ожидается код ошибки 409)
-    // статус можно изменить только у заявок, находящихся в состоянии ожидания (Ожидается код ошибки 409)
-    // если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
+
     @Override
     @Transactional
     public RequestStatusUpdateResultDto updateRequestsStatus(Long userId, Long eventId,

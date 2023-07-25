@@ -3,10 +3,7 @@ package ru.practicum.explore_with_me.category.controller;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.explore_with_me.category.dto.CategoryDto;
 import ru.practicum.explore_with_me.category.service.CategoryService;
 
@@ -37,7 +34,7 @@ public class CategoryControllerPublic {
      * Получение  информации о категории по ее идентификатору
      */
     @GetMapping("/{catId}")
-    public CategoryDto getCategoryById(@Positive Long catId) {
+    public CategoryDto getCategoryById(@Positive @PathVariable Long catId) {
         log.info("GET /categories/{}", catId);
         return categoryService.getCategoryById(catId);
     }
