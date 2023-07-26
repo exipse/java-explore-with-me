@@ -171,11 +171,6 @@ public class EventServiceImpl implements EventService {
         eventModel.setCreatedOn(LocalDateTime.now());
         eventModel.setInitiator(user);
         eventModel.setLocation(location);
-        eventModel.setPaid(newEventDto.getPaid() != null ? newEventDto.getPaid() : false);
-        eventModel.setParticipantLimit(
-                newEventDto.getParticipantLimit() != null ? newEventDto.getParticipantLimit() : 0L);
-        eventModel.setRequestModeration(
-                newEventDto.getRequestModeration() != null ? newEventDto.getRequestModeration() : true);
         eventModel.setState(State.PENDING);
         eventModel.setViews(0L);
         Event saveEvent = eventRepository.save(eventModel);

@@ -30,7 +30,7 @@ import java.util.List;
 @Slf4j
 public class EventControllerPrivate {
 
-    EventService eventService;
+    private final EventService eventService;
     private final StatsClient statsClient;
     private static final String eventName = "ewm-service";
 

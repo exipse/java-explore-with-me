@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    //    @ExceptionHandler
+//        @ExceptionHandler
 //    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 //    public ApiError handleThrowable(final Throwable e) {
 //        return new ApiError("Произошла непредвиденная ошибка",
 //                    "Internal Server Error", "INTERNAL_SERVER_ERROR)");
 //    }
-//
+
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError noCorrectValidate(final MissingServletRequestParameterException e) {

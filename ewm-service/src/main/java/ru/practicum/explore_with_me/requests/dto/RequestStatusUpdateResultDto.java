@@ -12,6 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 public class RequestStatusUpdateResultDto {
 
-    List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
-    List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
+   private List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
+   private List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
 }

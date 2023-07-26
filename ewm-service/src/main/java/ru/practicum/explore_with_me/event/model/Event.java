@@ -1,9 +1,6 @@
 package ru.practicum.explore_with_me.event.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import ru.practicum.explore_with_me.category.model.Category;
 import ru.practicum.explore_with_me.event.dto.State;
 import ru.practicum.explore_with_me.location.model.Location;
@@ -12,10 +9,11 @@ import ru.practicum.explore_with_me.user.model.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Data
 @Builder
 @Table(name = "EVENT", schema = "public")
 @Entity
+@Getter
+@Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class Event {

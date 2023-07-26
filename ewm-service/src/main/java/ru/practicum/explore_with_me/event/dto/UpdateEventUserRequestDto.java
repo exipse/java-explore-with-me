@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.explore_with_me.location.dto.LocationDto;
 
-import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
@@ -27,7 +27,7 @@ public class UpdateEventUserRequestDto {
 
     private LocationDto location;
     private Boolean paid;
-    @Positive
+    @PositiveOrZero
     private Long participantLimit;
     private Boolean requestModeration;
 

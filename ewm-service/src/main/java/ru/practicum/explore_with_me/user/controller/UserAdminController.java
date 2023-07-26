@@ -1,7 +1,6 @@
 package ru.practicum.explore_with_me.user.controller;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,6 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @AllArgsConstructor
-@Data
 @RestController
 @RequestMapping("/admin/users")
 @Slf4j

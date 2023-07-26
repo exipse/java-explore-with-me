@@ -2,18 +2,23 @@ package ru.practicum.explore_with_me.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.explore_with_me.location.dto.LocationDto;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
-@Data
+//@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class NewEventDto {
 
     @NotBlank
@@ -23,7 +28,7 @@ public class NewEventDto {
     @NotNull
     private Long category;
 
-    @NotNull
+    @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
 
@@ -32,13 +37,15 @@ public class NewEventDto {
     private LocalDateTime eventDate;
 
     @NotNull
+    @Valid
     private LocationDto location;
 
-    private Boolean paid;
+    private boolean paid;
 
-    private Long participantLimit;
+    @PositiveOrZero
+    private long participantLimit;
 
-    private Boolean requestModeration;
+    private boolean requestModeration = true;
 
     @NotBlank
     @Size(min = 3, max = 120)
