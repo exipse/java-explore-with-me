@@ -388,7 +388,7 @@ public class EventServiceImpl implements EventService {
         }
         LocalDateTime end = LocalDateTime.now();
 
-        long viewsCount = 0l;
+        long viewsCount = 0L;
         List<ViewStatsDto> views = (List<ViewStatsDto>) statsClient.get(start, end, uris, true).getBody();
         if (views != null) {
             viewsCount = views.size();
