@@ -57,7 +57,6 @@ CREATE TABLE EVENT
     request_moderator  bool NOT NULL,
     state              VARCHAR NOT NULL,
     title              VARCHAR(120) NOT NULL,
-    views              BIGINT DEFAULT 0,
 
     CONSTRAINT pk_event PRIMARY KEY (id)
 );

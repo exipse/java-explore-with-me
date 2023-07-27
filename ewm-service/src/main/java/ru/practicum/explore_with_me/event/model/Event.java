@@ -80,5 +80,6 @@ public class Event {
     private String title;
 
     //Количество просмотрев события
-    private Long views;// -
+    @Transient
+    private Long views;
 }

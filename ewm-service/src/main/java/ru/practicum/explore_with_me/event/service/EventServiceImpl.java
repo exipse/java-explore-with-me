@@ -34,6 +34,7 @@ import ru.practicum.explore_with_me.user.repository.UserRepository;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,7 +63,11 @@ public class EventServiceImpl implements EventService {
         }
         List<Event> events
                 = eventRepository.findEventsByParams(users, states, categories, rangeStart, rangeEnd, pageable);
-        events.forEach(event -> event.setViews(event.getViews() + 1));
+
+
+        events.forEach(event ->
+                event.setViews(getViews(event, getUrisByEvents(events))));
+
         eventRepository.saveAll(events);
         return eventMapper.toEventListDto(events);
     }
@@ -95,25 +100,24 @@ public class EventServiceImpl implements EventService {
         return eventMapper.toEventDto(saveEvent);
     }
 
-
     @Override
     public List<EventShortDto> findEventsWithFilter(String text, List<Long> categories, Boolean paid,
                                                     LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                     Boolean onlyAvailable, String sort, int from, int size) {
-
         if ((rangeStart != null) && (rangeEnd != null)) {
             validateDate(rangeStart, rangeEnd);
         }
         Sort sortById = Sort.by(Sort.Direction.ASC, "id");
         Pageable pageable = PageRequest.of(from / size, size, sortById);
-
         List<Event> events = eventRepository.findPublicEvents(text, categories, paid, rangeStart,
                 rangeEnd, onlyAvailable, sort, pageable);
-        events.forEach(event -> event.setViews(event.getViews() + 1));
+
+        events.forEach(event ->
+                event.setViews(getViews(event, getUrisByEvents(events))));
+
         eventRepository.saveAll(events);
         return eventMapper.fromListEventModeltoEventListShortDto(events);
     }
-
 
     @Override
     public EventFullDto getPublicEventById(Long id, HttpServletRequest request) {
@@ -121,41 +125,23 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(State.PUBLISHED)) {
             throw new NoFoundException("Событие не доступно для просмотра");
         }
-
         List<String> uris = new ArrayList<>();
         uris.add(request.getRequestURI());
-
-        LocalDateTime start = event.getPublishedOn();
-        LocalDateTime end = LocalDateTime.now();
-
-
-        List<ViewStatsDto> views = (List<ViewStatsDto>) statsClient.get(start, end, uris, true).getBody();
-
-        if (views != null) {
-            event.setViews((long) views.size());
-        } else {
-            event.setViews(0L);
-        }
-
+        event.setViews(getViews(event, uris));
         EventFullDto fullDto = eventMapper.toEventDto(eventRepository.save(event));
         log.info("Событие найдено");
-        return eventMapper.toEventDto(eventRepository.save(event));
+        return fullDto;
     }
-
 
     @Override
     public List<EventShortDto> getMyEvents(Long userId, Integer from, Integer size) {
-
         User user = checkUser(userId);
         Sort sortById = Sort.by(Sort.Direction.ASC, "id");
         Pageable pageable = PageRequest.of(from / size, size, sortById);
-
-        List<Event> findEventsInDb = eventRepository.findAllByInitiatorId(userId, pageable).getContent();
-        log.info("Список событий пользователя {} найден. Размер списка = {} элементов", userId, findEventsInDb.size());
-
-        findEventsInDb.forEach(event -> event.setViews(event.getViews() + 1));
-        eventRepository.saveAll(findEventsInDb);
-        return eventMapper.fromListEventModeltoEventListShortDto(findEventsInDb);
+        List<Event> events = eventRepository.findAllByInitiatorId(userId, pageable).getContent();
+        log.info("Список событий пользователя {} найден. Размер списка = {} элементов", userId, events.size());
+        eventRepository.saveAll(events);
+        return eventMapper.fromListEventModeltoEventListShortDto(events);
     }
 
     @Transactional
@@ -172,22 +158,19 @@ public class EventServiceImpl implements EventService {
         eventModel.setInitiator(user);
         eventModel.setLocation(location);
         eventModel.setState(State.PENDING);
-        eventModel.setViews(0L);
         Event saveEvent = eventRepository.save(eventModel);
         return eventMapper.toEventDto(saveEvent);
     }
 
     @Override
     public EventFullDto getMyEventById(Long userId, Long eventId) {
-        User user = checkUser(userId);
-        Event eventInDB = eventRepository.findEventByInitiatorIdAndId(userId, eventId)
+        checkUser(userId);
+        Event event = eventRepository.findEventByInitiatorIdAndId(userId, eventId)
                 .orElseThrow(() -> new NoFoundException(String.format("У пользователя id=%d событие id=%d не найдено",
                         userId, eventId)));
         log.info("Для пользователя id={} найдено событие id={}", userId, eventId);
-        eventInDB.setViews(eventInDB.getViews() + 1);
-        return eventMapper.toEventDto(eventRepository.save(eventInDB));
+        return eventMapper.toEventDto(eventRepository.save(event));
     }
-
 
     private Event updateEventsFieldsByAdmin(Event event, UpdateEventAdminRequestDto updateEventAdmin) {
         if (updateEventAdmin.getAnnotation() != null && !updateEventAdmin.getAnnotation().isBlank()) {
@@ -246,7 +229,6 @@ public class EventServiceImpl implements EventService {
         return eventMapper.toEventDto(saveEvent);
     }
 
-
     private Event updateEventFieldsByUser(Event event, UpdateEventUserRequestDto updateEvent) {
         if (updateEvent.getAnnotation() != null && !updateEvent.getAnnotation().isBlank()) {
             event.setAnnotation(updateEvent.getAnnotation());
@@ -284,7 +266,6 @@ public class EventServiceImpl implements EventService {
         }
         return event;
     }
-
 
     private User checkUser(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new NoFoundException("Пользователь не найден"));
@@ -326,7 +307,6 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-
     @Override
     public List<ParticipationRequestDto> getMyEventsByRequest(Long userId, Long eventId) {
 
@@ -338,7 +318,6 @@ public class EventServiceImpl implements EventService {
         log.info("Получена информация о {} запросах по событию {}", resulRequests.size(), eventId);
         return resulRequests;
     }
-
 
     @Override
     @Transactional
@@ -380,6 +359,36 @@ public class EventServiceImpl implements EventService {
             }
         }
         return result;
+    }
+
+    private List<String>  getUrisByEvents(List<Event> events){
+        if (events == null || events.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> uris = new ArrayList<>();
+
+        for (Event event : events) {
+            uris.add("/events/" + event.getId());
+        }
+        return uris;
+    }
+
+    private long getViews(Event event,List<String> uris ){
+        LocalDateTime start;
+        if(event.getPublishedOn() == null){
+            start = event.getCreatedOn();
+        }
+        else {
+            start = event.getPublishedOn();
+        }
+        LocalDateTime end = LocalDateTime.now();
+
+        long viewsCount = 0l;
+        List<ViewStatsDto> views = (List<ViewStatsDto>) statsClient.get(start, end, uris, true).getBody();
+        if (views != null) {
+            viewsCount = (long) views.size();
+        }
+        return viewsCount;
     }
 
 }

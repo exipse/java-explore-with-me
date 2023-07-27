@@ -1,7 +1,7 @@
 package ru.practicum.explore_with_me.event.controller;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,14 +25,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users/{userId}/events")
-@AllArgsConstructor
 @Validated
 @Slf4j
 public class EventControllerPrivate {
 
     private final EventService eventService;
     private final StatsClient statsClient;
-    private static final String eventName = "ewm-service";
+    private final String eventName;
+
+    public EventControllerPrivate(EventService eventService, StatsClient statsClient,
+                                  @Value("${service.url}") String eventName) {
+        this.eventService = eventService;
+        this.statsClient = statsClient;
+        this.eventName = eventName;
+    }
 
     /**
      * Получение событий, добавленных текущим пользователем
