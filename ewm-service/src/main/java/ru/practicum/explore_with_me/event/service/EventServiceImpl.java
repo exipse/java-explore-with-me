@@ -65,8 +65,12 @@ public class EventServiceImpl implements EventService {
                 = eventRepository.findEventsByParams(users, states, categories, rangeStart, rangeEnd, pageable);
 
 
-        events.forEach(event ->
-                event.setViews(getViews(event, getUrisByEvents(events))));
+        events.forEach(event -> {
+            event.setViews(getViews(event, getUrisByEvents(events)));
+            Long confirmedRequestsByEvent =
+                    (long) requestRepository.findAllByStatusAndEventId(Status.CONFIRMED, event.getId()).size();
+            event.setConfirmedRequests(confirmedRequestsByEvent);
+        });
 
         eventRepository.saveAll(events);
         return eventMapper.toEventListDto(events);
@@ -334,7 +338,9 @@ public class EventServiceImpl implements EventService {
             return result;
         }
 
-        if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
+        List<Request> confirmedRequestsByEvent =
+                requestRepository.findAllByStatusAndEventId(Status.CONFIRMED, eventId);
+        if (confirmedRequestsByEvent.size() >= event.getParticipantLimit()) {
             throw new ValidateDataException("Нельзя подтвердить заявку, уже достигнут лимит по заявкам на данное событие");
         }
 
@@ -345,13 +351,13 @@ public class EventServiceImpl implements EventService {
             if (!request.getStatus().equals(Status.PENDING)) {
                 throw new ValidateDataException("Cтатус заявки не PENDING");
             }
-            if ((event.getParticipantLimit() - event.getConfirmedRequests() > 0)
+            if ((event.getParticipantLimit() - confirmedRequestsByEvent.size() > 0)
                     && requestDto.getStatus().equals(Status.CONFIRMED)) {
                 request.setStatus(Status.CONFIRMED);
                 requestRepository.save(request);
                 ParticipationRequestDto dto = requestMapper.toRequestDto(request);
                 result.getConfirmedRequests().add(dto);
-                event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+                event.setConfirmedRequests(confirmedRequestsByEvent.size() + 1L);
             } else {
                 request.setStatus(Status.REJECTED);
                 requestRepository.save(request);
@@ -361,7 +367,7 @@ public class EventServiceImpl implements EventService {
         return result;
     }
 
-    private List<String>  getUrisByEvents(List<Event> events){
+    private List<String> getUrisByEvents(List<Event> events) {
         if (events == null || events.isEmpty()) {
             return Collections.emptyList();
         }
@@ -373,12 +379,11 @@ public class EventServiceImpl implements EventService {
         return uris;
     }
 
-    private long getViews(Event event,List<String> uris ){
+    private long getViews(Event event, List<String> uris) {
         LocalDateTime start;
-        if(event.getPublishedOn() == null){
+        if (event.getPublishedOn() == null) {
             start = event.getCreatedOn();
-        }
-        else {
+        } else {
             start = event.getPublishedOn();
         }
         LocalDateTime end = LocalDateTime.now();
@@ -386,7 +391,7 @@ public class EventServiceImpl implements EventService {
         long viewsCount = 0l;
         List<ViewStatsDto> views = (List<ViewStatsDto>) statsClient.get(start, end, uris, true).getBody();
         if (views != null) {
-            viewsCount = (long) views.size();
+            viewsCount = views.size();
         }
         return viewsCount;
     }

@@ -3,6 +3,7 @@ package ru.practicum.explore_with_me.user.controller;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explore_with_me.user.dto.UserDto;
 import ru.practicum.explore_with_me.user.service.UserService;
@@ -14,8 +15,9 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/admin/users")
 @Slf4j
+@Validated
+@RequestMapping("/admin/users")
 public class UserAdminController {
 
     private UserService userService;

@@ -28,7 +28,7 @@ public class EventControllerPublic {
     private final String eventName;
 
     public EventControllerPublic(EventService eventService, StatsClient statsClient,
-                                  @Value("${service.url}") String eventName) {
+                                 @Value("${service.url}") String eventName) {
         this.eventService = eventService;
         this.statsClient = statsClient;
         this.eventName = eventName;

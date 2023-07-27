@@ -22,42 +22,34 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //*
     private String annotation;
 
-    //*
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
     //Количество одобренных заявок на участие в данном событии
-    @Column(name = "confirmed_request", nullable = false)
-    private Long confirmedRequests; //-
+    @Transient
+    private Long confirmedRequests;
 
-    //*
     //Дата и время создания события
     @Column(name = "created_on", nullable = false)
-    private LocalDateTime createdOn; //-
+    private LocalDateTime createdOn;
 
-    //*
     private String description;
 
-    //*
     //Дата и время на которые намечено событие
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
-    //*
     @ManyToOne
     @JoinColumn(name = "initiator_id", nullable = false)
-    private User initiator; //-
+    private User initiator;
 
-    //*
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
 
-    //*
     //Нужно ли оплачивать участие
     private Boolean paid;
 
@@ -75,8 +67,8 @@ public class Event {
 
     //Список состояний жизненного цикла события
     @Enumerated(EnumType.STRING)
-    private State state;// -
-    //*
+    private State state;
+
     private String title;
 
     //Количество просмотрев события

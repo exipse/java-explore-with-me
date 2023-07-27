@@ -16,18 +16,15 @@ public interface EventService {
     List<EventFullDto> getAllEventByAdmin(List<Long> users, List<State> states, List<Long> categories,
                                           LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
 
-
     /**
      * Редактирование данных события и его статуса (отклонение/публикация).
      */
     EventFullDto updateByAdmin(Long eventId, UpdateEventAdminRequestDto updateEventAdminRequestDto);
 
-
     //Получение событий с возможностью фильтрации
     List<EventShortDto> findEventsWithFilter(
             String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd,
             Boolean onlyAvailable, String sort, int from, int size);
-
 
     /**
      * Получение информации о категории по её идентификатору

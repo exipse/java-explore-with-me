@@ -44,7 +44,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "or (cast(:rangeStart as date) = null and e.eventDate < cast(:rangeEnd as date) )" +
             "or (cast(:rangeEnd as date) = null and e.eventDate > cast(:rangeStart as date) )" +
             "or (cast(:rangeStart as date) = null and cast(:rangeStart as date) = null) " +
-            "and e.confirmedRequests < e.participantLimit or :onlyAvailable = null " +
+            "and :onlyAvailable = null " +
             "and  e.state = 'PUBLISHED' " +
             "order by :sortType")
     List<Event> findPublicEvents(@Param("text") String text,

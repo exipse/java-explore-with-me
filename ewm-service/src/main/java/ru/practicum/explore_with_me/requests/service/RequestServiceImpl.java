@@ -45,6 +45,8 @@ public class RequestServiceImpl implements RequestService {
     public ParticipationRequestDto create(Long userId, Long eventId) {
         User user = checkUser(userId);
         Event event = checkEvent(eventId);
+        Long confirmedRequestsByEvent =
+                (long) requestRepository.findAllByStatusAndEventId(Status.CONFIRMED, eventId).size();
         if (event.getInitiator().getId().equals(userId)) {
             throw new ValidateDataException("Инициатор события не может добавить запрос на участие в своём событии");
         }
@@ -55,7 +57,7 @@ public class RequestServiceImpl implements RequestService {
         if (!event.getState().equals(State.PUBLISHED)) {
             throw new ValidateDataException("нельзя участвовать в неопубликованном событии");
         }
-        if (event.getParticipantLimit().equals(event.getConfirmedRequests()) &&
+        if (event.getParticipantLimit().equals(confirmedRequestsByEvent) &&
                 !event.getParticipantLimit().equals(0L)) {
             throw new ValidateDataException("У события достигнут лимит запросов на участие");
         }
@@ -64,7 +66,7 @@ public class RequestServiceImpl implements RequestService {
 
         if (!event.getRequestModeration() || event.getParticipantLimit().equals(0L)) {
             request.setStatus(Status.CONFIRMED);
-            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            event.setConfirmedRequests(confirmedRequestsByEvent + 1);
             eventRepository.save(event);
         }
         Request saveRequest = requestRepository.save(request);

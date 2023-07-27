@@ -1,6 +1,7 @@
 package ru.practicum.explore_with_me.requests.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import ru.practicum.explore_with_me.requests.dto.Status;
 import ru.practicum.explore_with_me.requests.model.Request;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> findAllByEventId(Long eventId);
 
     List<Request> findAllByIdIn(List<Long> requestIds);
+
+    List<Request> findAllByStatusAndEventId(Status status, Long eventId);
 }
