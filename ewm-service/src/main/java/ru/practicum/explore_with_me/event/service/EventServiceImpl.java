@@ -92,9 +92,9 @@ public class EventServiceImpl implements EventService {
         }
         Event eventinDB = checkEvent(eventId);
         Map<Long, Long> confirms = getConfirmedRequests(List.of(eventinDB));
-        if(confirms.get(eventId) == null){
+        if (confirms.get(eventId) == null) {
             eventinDB.setConfirmedRequests(0L);
-        }else{
+        } else {
             eventinDB.setConfirmedRequests(confirms.get(eventId));
         }
 
