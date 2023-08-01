@@ -1,7 +1,8 @@
 package ru.practicum.explore_with_me.event.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -10,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explore_with_me.StatsClient;
 import ru.practicum.explore_with_me.category.model.Category;
 import ru.practicum.explore_with_me.category.repository.CategoryRepository;
-import ru.practicum.explore_with_me.dto.ViewStatsDto;
+import ru.practicum.explore_with_me.dto.EndpointHitDto;
 import ru.practicum.explore_with_me.event.dto.*;
 import ru.practicum.explore_with_me.event.mapper.EventMapper;
 import ru.practicum.explore_with_me.event.model.Event;
@@ -35,9 +36,10 @@ import ru.practicum.explore_with_me.user.repository.UserRepository;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
@@ -51,9 +53,13 @@ public class EventServiceImpl implements EventService {
     private final RequestMapper requestMapper;
     private final LocationRepository locationRepository;
 
+    @Value("${service.url}")
+    private String eventName;
+
     @Override
     public List<EventFullDto> getAllEventByAdmin(List<Long> users, List<State> states, List<Long> categories,
-                                                 LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+                                                 LocalDateTime rangeStart, LocalDateTime rangeEnd, int from,
+                                                 int size, HttpServletRequest request) {
         Sort sortById = Sort.by(Sort.Direction.ASC, "id");
         Pageable pageable = PageRequest.of(from / size, size, sortById);
         if (rangeStart != null && rangeEnd != null) {
@@ -61,8 +67,15 @@ public class EventServiceImpl implements EventService {
         }
         List<Event> events
                 = eventRepository.findEventsByParams(users, states, categories, rangeStart, rangeEnd, pageable);
-        Map<Long, String> mapEventIdAndUris = getUrisByEvents(events);
-        Map<Event, Long> eventsViews = getViewsByEvents(events, mapEventIdAndUris);
+        List<String> uris = getUris(events);
+
+
+        if (!(uris.size() == 0)) {
+            saveViewsByEvents(events, request);
+        }
+
+        Map<Event, Long> eventsViews = getViewsByEvents(events, uris);
+
         Map<Long, Long> confirms = getConfirmedRequests(events);
 
         events.forEach(event -> {
@@ -104,7 +117,8 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> findEventsWithFilter(String text, List<Long> categories, Boolean paid,
                                                     LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                                    Boolean onlyAvailable, String sort, int from, int size) {
+                                                    Boolean onlyAvailable, String sort, int from, int size,
+                                                    HttpServletRequest request) {
         if ((rangeStart != null) && (rangeEnd != null)) {
             validateDate(rangeStart, rangeEnd);
         }
@@ -112,8 +126,12 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(from / size, size, sortById);
         List<Event> events = eventRepository.findPublicEvents(text, categories, paid, rangeStart,
                 rangeEnd, onlyAvailable, sort, pageable);
-        Map<Long, String> mapEventIdAndUris = getUrisByEvents(events);
-        Map<Event, Long> eventsViews = getViewsByEvents(events, mapEventIdAndUris);
+        List<String> uris = getUris(events);
+        Map<Event, Long> eventsViews = getViewsByEvents(events, uris);
+
+        if (!(uris.size() == 0)) {
+            saveViewsByEvents(events, request);
+        }
         events.forEach(event ->
                 event.setViews(eventsViews.get(event)));
         eventRepository.saveAll(events);
@@ -128,7 +146,8 @@ public class EventServiceImpl implements EventService {
         }
         List<String> uris = new ArrayList<>();
         uris.add(request.getRequestURI());
-        event.setViews(getViews(event, uris));
+        Map<Event, Long> eventsViews = getViewsByEvents(List.of(event), uris);
+        event.setViews(eventsViews.get(event));
         EventFullDto fullDto = eventMapper.toEventDto(eventRepository.save(event));
         log.info("Событие найдено");
         return fullDto;
@@ -362,46 +381,58 @@ public class EventServiceImpl implements EventService {
         return result;
     }
 
-    private Map<Long, String> getUrisByEvents(List<Event> events) {
+    private List<String> getUris(List<Event> events) {
         if (events == null || events.isEmpty()) {
-            return Collections.emptyMap();
+            return Collections.emptyList();
         }
-        Map<Long, String> uris = new HashMap<>();
-
+        List<String> uris = new ArrayList<>();
         for (Event event : events) {
-            uris.put(event.getId(), "/events/" + event.getId());
+            uris.add("/events/" + event.getId());
         }
         return uris;
     }
 
-    private long getViews(Event event, List<String> uris) {
-        LocalDateTime start;
-        if (event.getPublishedOn() == null) {
-            start = event.getCreatedOn();
-        } else {
-            start = event.getPublishedOn();
-        }
-        LocalDateTime end = LocalDateTime.now();
-
-        long viewsCount = 0L;
-        List<ViewStatsDto> views = (List<ViewStatsDto>) statsClient.get(start, end, uris, true).getBody();
-        if (views != null) {
-            viewsCount = views.size();
-        }
-        return viewsCount;
+    private void saveStats(HttpServletRequest request, Long uri) {
+        statsClient.create(EndpointHitDto.builder()
+                .app(eventName)
+                .uri("/events/" + uri)
+                .ip(request.getRemoteAddr())
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
-    private Map<Event, Long> getViewsByEvents(List<Event> events, Map<Long, String> uris) {
-        Map<Event, Long> returnViews = new HashMap<>();
-
+    private void saveViewsByEvents(List<Event> events, HttpServletRequest request) {
         for (Event event : events) {
-            if (!uris.containsKey(event.getId())) {
-                throw new IllegalArgumentException("Для события нет URI");
-            }
-            long viewsForEvent = getViews(event, List.of(uris.get(event.getId())));
-            returnViews.put(event, viewsForEvent);
+            saveStats(request, event.getId());
         }
-        return returnViews;
+    }
+
+    private Map<Event, Long> getViewsByEvents(List<Event> events, List<String> uris) {
+        Map<Event, Long> returnViews = new HashMap<>();
+        List<LocalDateTime> listDatesAllEvents = events.stream().filter(event -> event.getPublishedOn() != null)
+                .map(Event::getPublishedOn).collect(Collectors.toList());
+
+
+        if (listDatesAllEvents.isEmpty() || listDatesAllEvents == null) {
+            return Collections.emptyMap();
+        }
+        LocalDateTime start = listDatesAllEvents.stream().min(LocalDateTime::compareTo).get();
+        LocalDateTime end = LocalDateTime.now();
+        List<Map> views = (List<Map>) statsClient.get(start, end, uris, true).getBody();
+        if (views.size() == 0) {
+            for (Event event : events) {
+                returnViews.put(event, 0L);
+            }
+            return returnViews;
+        }
+        Map<Event, Long> result = new LinkedHashMap<>();
+        for (Event event : events) {
+            Map<String, String> test = views.get(0);
+            Long filter = test.entrySet().stream().filter(stat -> stat.getKey().equals("uri") && stat.getValue().equals("/events/" + event.getId())).count();
+            result.put(event, filter);
+        }
+        return result;
+
     }
 
     private Map<Long, Long> getConfirmedRequests(List<Event> events) {
@@ -410,14 +441,8 @@ public class EventServiceImpl implements EventService {
         }
         List<RequestShort> requests =
                 requestRepository.findAllByStatusAndEventIn(Status.CONFIRMED, events);
-
-        Map<Long, Long> result = new HashMap<>();
-        for (Event event : events) {
-            Long id = event.getId();
-            Long count = requests.stream()
-                    .filter(request -> request.getEvent().getId().equals(event.getId())).count();
-            result.put(id, count);
-        }
+        Map<Long, Long> result = requestRepository.findAllByStatusAndEventIn(Status.CONFIRMED, events).stream()
+                .collect(Collectors.groupingBy(r -> r.getEvent().getId(), Collectors.counting()));
         return result;
     }
 }

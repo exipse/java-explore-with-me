@@ -36,7 +36,6 @@ public class EventControllerAdmin {
         this.eventName = eventName;
     }
 
-
     @GetMapping
     public List<EventFullDto> getAllEventByAdmin(
             @RequestParam(required = false) List<Long> users,
@@ -51,7 +50,7 @@ public class EventControllerAdmin {
         log.info("GET /admin/events?users={}&states={}&categories={}&rangeStart={}&rangeEnd={}&from={}&size={}",
                 users, states, categories, rangeStart, rangeEnd, from, size);
         saveStats(request);
-        return eventService.getAllEventByAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+        return eventService.getAllEventByAdmin(users, states, categories, rangeStart, rangeEnd, from, size, request);
     }
 
     @PatchMapping("/{eventId}")

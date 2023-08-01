@@ -53,7 +53,7 @@ public class EventControllerPublic {
                 "&from={}&size={}", text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
         saveStats(request);
         return eventService.findEventsWithFilter(text, categories, paid, rangeStart,
-                rangeEnd, onlyAvailable, sort, from, size);
+                rangeEnd, onlyAvailable, sort, from, size, request);
     }
 
     /**

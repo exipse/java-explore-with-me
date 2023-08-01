@@ -14,7 +14,7 @@ public interface EventService {
      * Поиск событий
      */
     List<EventFullDto> getAllEventByAdmin(List<Long> users, List<State> states, List<Long> categories,
-                                          LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
+                                          LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size, HttpServletRequest request);
 
     /**
      * Редактирование данных события и его статуса (отклонение/публикация).
@@ -24,7 +24,7 @@ public interface EventService {
     //Получение событий с возможностью фильтрации
     List<EventShortDto> findEventsWithFilter(
             String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd,
-            Boolean onlyAvailable, String sort, int from, int size);
+            Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest request);
 
     /**
      * Получение информации о категории по её идентификатору
