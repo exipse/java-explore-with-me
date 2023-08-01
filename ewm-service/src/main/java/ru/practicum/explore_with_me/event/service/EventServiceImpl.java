@@ -68,13 +68,11 @@ public class EventServiceImpl implements EventService {
         List<Event> events
                 = eventRepository.findEventsByParams(users, states, categories, rangeStart, rangeEnd, pageable);
         List<String> uris = getUris(events);
-
+        Map<Event, Long> eventsViews = getViewsByEvents(events, uris);
 
         if (!(uris.size() == 0)) {
             saveViewsByEvents(events, request);
         }
-
-        Map<Event, Long> eventsViews = getViewsByEvents(events, uris);
 
         Map<Long, Long> confirms = getConfirmedRequests(events);
 
@@ -421,7 +419,7 @@ public class EventServiceImpl implements EventService {
         List<Map> views = (List<Map>) statsClient.get(start, end, uris, true).getBody();
         if (views.size() == 0) {
             for (Event event : events) {
-                returnViews.put(event, 0L);
+                returnViews.put(event, null);
             }
             return returnViews;
         }
