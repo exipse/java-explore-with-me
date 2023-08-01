@@ -90,8 +90,13 @@ public class EventServiceImpl implements EventService {
         if (updateEventAdminRequestDto.getEventDate() != null) {
             checkDate(updateEventAdminRequestDto.getEventDate(), 1);
         }
-
         Event eventinDB = checkEvent(eventId);
+        Map<Long, Long> confirms = getConfirmedRequests(List.of(eventinDB));
+        if(confirms.get(eventId) == null){
+            eventinDB.setConfirmedRequests(0L);
+        }else{
+            eventinDB.setConfirmedRequests(confirms.get(eventId));
+        }
 
         if (updateEventAdminRequestDto.getStateAction() != null) {
             if (updateEventAdminRequestDto.getStateAction().equals(StateAdminAction.PUBLISH_EVENT)
