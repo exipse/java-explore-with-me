@@ -37,11 +37,6 @@ public class StatsClient extends BaseClient {
     public ResponseEntity<Object> get(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
         StringBuilder urisBuilder = new StringBuilder();
         for (int i = 0; i < uris.size(); i++) {
-//            if (i < (uris.size() - 1)) {
-//                urisBuilder.append("uris=").append(uris.get(i)).append(",");
-//            } else {
-//                urisBuilder.append("uris=").append(uris.get(i));
-//            }
             if (i < (uris.size() - 1)) {
                 urisBuilder.append(uris.get(i)).append(",");
             } else {
