@@ -14,7 +14,6 @@ import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
-//@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

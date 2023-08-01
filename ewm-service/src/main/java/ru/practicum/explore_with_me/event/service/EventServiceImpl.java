@@ -78,7 +78,11 @@ public class EventServiceImpl implements EventService {
 
         events.forEach(event -> {
             event.setViews(eventsViews.get(event));
-            event.setConfirmedRequests(confirms.get(event.getId()));
+            if (confirms.get(event.getId()) == null) {
+                event.setConfirmedRequests(0L);
+            } else {
+                event.setConfirmedRequests(confirms.get(event.getId()));
+            }
         });
         eventRepository.saveAll(events);
         return eventMapper.toEventListDto(events);
