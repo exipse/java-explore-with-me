@@ -47,7 +47,8 @@ public class StatsServiceImpl implements StatsService {
         } else {
             result = statsRepository.getStats(start, end, uris);
         }
-        return viewStatsMapper.toViewStatsListDto(result);
+        List<ViewStatsDto> dtos = viewStatsMapper.toViewStatsListDto(result);
+        return dtos;
     }
 
 }

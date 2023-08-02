@@ -11,7 +11,7 @@
 
     <artifactId>stats-client</artifactId>
     <groupId>ru.practicum-client</groupId>
-    <version>0.0.1-SNAPSHOT</version>
+
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
