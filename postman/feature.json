@@ -415,7 +415,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"text\": \"1\",\n    \"eventId\": 50\n}",
+					"raw": "{\n    \"text\": \"1\",\n    \"eventId\": 500\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -622,7 +622,7 @@
 							"pm.test(\"Test comment 'message' field\", function () {",
 							"    var jsonData = pm.response.json();",
 							"    pm.expect(jsonData).to.have.property('message');",
-							"    pm.expect(jsonData.message, '\"message\" must be \"Комментария с id=100 не найдено\"').to.eql('Комментария с id=100 не найдено');",
+							"    pm.expect(jsonData.message, '\"message\" must be \"Событие не найдено\"').to.eql('Событие не найдено');",
 							"});",
 							""
 						],
@@ -669,7 +669,7 @@
 					"variable": [
 						{
 							"key": "eventId",
-							"value": null
+							"value": "150"
 						}
 					]
 				}
@@ -767,7 +767,7 @@
 					"variable": [
 						{
 							"key": "userId",
-							"value": "100"
+							"value": "150"
 						},
 						{
 							"key": "commentId",
