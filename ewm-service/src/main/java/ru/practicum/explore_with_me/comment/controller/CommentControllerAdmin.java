@@ -1,6 +1,6 @@
 package ru.practicum.explore_with_me.comment.controller;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +9,7 @@ import ru.practicum.explore_with_me.comment.service.CommentService;
 
 import javax.validation.constraints.Positive;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @Validated
 @Slf4j

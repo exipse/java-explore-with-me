@@ -15,7 +15,8 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {EventMapper.class, UserMapper.class})
 public interface CommentMapper {
 
-
+    @Mapping(target = "user", source = "user.id")
+    @Mapping(target = "event", source = "event.id")
     CommentDto toCommentDto(Comment comment);
 
     @Mapping(target = "event", source = "eventMod")

@@ -26,6 +26,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 @Slf4j
+@Transactional
 public class CommentServiceImpl implements CommentService {
 
     private final UserRepository userRepository;
@@ -50,7 +51,6 @@ public class CommentServiceImpl implements CommentService {
         return commentDto;
     }
 
-    @Transactional
     @Override
     public CommentDto updateComment(long userId, long commentId, UpdateCommentDto updateCommentDto) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
@@ -79,6 +79,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("Комментарий commentId={} удален", commentId);
     }
 
+    @Transactional(readOnly=true)
     @Override
     public List<CommentDto> getCommentsByEventId(Long eventId, int from, int size) {
         Sort sortById = Sort.by(Sort.Direction.ASC, "id");
@@ -90,11 +91,10 @@ public class CommentServiceImpl implements CommentService {
             throw new ValidateDataException("Нельзя получить комментарии к событию в статусе - Ожидание");
         }
         List<Comment> comments = commentRepository.findAllByEvent_Id(eventId, pageable);
-//        List<CommentDto> commentDtoList = commentMapper.toCommentDtoList(comments);
-//        log.info("Комментарий по событию eventId={} получены", eventId);
         return commentMapper.toCommentDtoList(comments);
     }
 
+    @Transactional(readOnly=true)
     @Override
     public CommentDto getCommentById(Long commentId) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
