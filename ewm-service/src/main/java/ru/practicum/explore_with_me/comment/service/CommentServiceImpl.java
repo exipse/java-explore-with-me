@@ -79,7 +79,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("Комментарий commentId={} удален", commentId);
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @Override
     public List<CommentDto> getCommentsByEventId(Long eventId, int from, int size) {
         Sort sortById = Sort.by(Sort.Direction.ASC, "id");
@@ -94,7 +94,7 @@ public class CommentServiceImpl implements CommentService {
         return commentMapper.toCommentDtoList(comments);
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @Override
     public CommentDto getCommentById(Long commentId) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
